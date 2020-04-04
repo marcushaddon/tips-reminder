@@ -38,6 +38,7 @@ export interface IRecipient {
 
 export interface ITipJarClient {
     getRandomRecipients(count: number): Promise<IRecipient[]>;
+    updateRecipient(recipient: IRecipient): Promise<void>;
 }
 
 export interface ITipperServiceClient {
