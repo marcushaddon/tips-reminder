@@ -2,7 +2,7 @@ import axios, { AxiosStatic } from 'axios';
 import { ITipperServiceClient, ITipper } from '../../model';
 import config from 'config';
 
-const appConfig = config.get('app');
+const appConfig = (config as any).get('app');
 
 export default class TipperServiceClient implements ITipperServiceClient {
     private baseUrl: string;
