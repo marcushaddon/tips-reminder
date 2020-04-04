@@ -36,7 +36,7 @@ export default class EventHandler {
         logger.info(`Fetched ${tippers.length} tippers due at time ${time}`);
 
         // Group schedules+tippers by tipJarId
-        const tipjarSchedules = getSceduleGroups(tippers);
+        const tipjarSchedules = getScheduleGroups(tippers);
         
         logger.info('Grouped due schedules by tipJarId');
         
@@ -58,7 +58,7 @@ const due = (schedule: ISchedule): boolean => cronparser
     .next()
     .getTime() <= new Date().getTime();
 
-const getSceduleGroups = (tippers: ITipper[]):  { [ tipJarId: string ]: ITipperSchedule[] } => {
+const getScheduleGroups = (tippers: ITipper[]):  { [ tipJarId: string ]: ITipperSchedule[] } => {
 
     return {};
 }
