@@ -8,5 +8,6 @@
         { "[3]": "paypal" },
         { "[3]": "cashapp" },
         { "[4]": "insurance" }
-    ]
+    ],
+    "skip": 2
 }

@@ -17,9 +17,7 @@ export default class GoogleSheetClient implements ITipJarClient {
         private tipJarId: string,
         private s3 = new S3({ region: appConfig.get('region') }),
         private bucketName = s3Config.get('integrationsBucket')
-    ) {
-
-    }
+    ) { }
     
     public async getRandomRecipients(count: number): Promise<IRecipient[]> {
         if (this.rows.length === 0) {
