@@ -6,4 +6,6 @@ export default class GoogleSheetClient implements ITipJarClient {
     public async getRandomRecipients(count: number): Promise<IRecipient[]> {
         return [];
     }
+
+    public async updateRecipient(recipient: IRecipient): Promise<void> { }
 }
