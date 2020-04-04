@@ -1,0 +1,12 @@
+{
+    "url": "https://docs.google.com/spreadsheets/d/1DrGpI7WdTEndUetSBePBFSxbQ81pRouvAFhK4jWBXPI/export?format=csv",
+    "mappings": [
+        { "[0]": "establishment" },
+        { "[1]": "firstName" },
+        { "[2]": "closed" },
+        { "[3]": "venmo" },
+        { "[3]": "paypal" },
+        { "[3]": "cashapp" },
+        { "[4]": "insurance" }
+    ]
+}

@@ -5,11 +5,10 @@ import {
     ITipper,
     ISchedule
 } from '../model';
-import TipJarClientProvider from '../main/providers/TipJarClientProvider';
+
 import TipperServiceClient from './client/TipperServiceClient';
 
 export interface IEventHandlerParams {
-    tipJarClientProvider: TipJarClientProvider;
     tipperServiceClient: TipperServiceClient;
 }
 
@@ -19,13 +18,10 @@ interface ITipperSchedule {
 }
 
 export default class EventHandler {
-    private tipJarClientProvider: TipJarClientProvider;
     private tipperService: TipperServiceClient;
     constructor({
-        tipJarClientProvider = new TipJarClientProvider(),
         tipperService = new TipperServiceClient()
     }) {
-        this.tipJarClientProvider = tipJarClientProvider;
         this.tipperService = tipperService;
     }
 
@@ -59,6 +55,13 @@ const due = (schedule: ISchedule): boolean => cronparser
     .getTime() <= new Date().getTime();
 
 const getScheduleGroups = (tippers: ITipper[]):  { [ tipJarId: string ]: ITipperSchedule[] } => {
+    const groups: { [ tipJarId: string ]: ITipperSchedule[] } = {};
+    for (let tipper of tippers) {
+        tipper.schedules
+            .filter(due)
+            .forEach(schedule => groups[schedule.tipJarId])
+
+    }
 
     return {};
 }

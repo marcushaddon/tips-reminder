@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  Cloud resources for the tips-reminder service
+Parameters:
+  Environment:
+    Type: String
+    Description: The test or prod basically
+    Default: test
+  
+Resources:
+  TipsReminderIntegrationsBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: !Sub tips-${Environment}-reminder-integrations
+      AccessControl: BucketOwnerFullControl
+  TipsReminderIntegrationsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref TipsReminderIntegrationsBucket
+      PolicyDocument:
+        Statement:
+          # reading is open to the AWS account
+          - Action:
+              - "s3:GetObject"
+            Effect: "Allow"
+            Resource:
+              Fn::Join:
+                - ""
+                -
+                  - "arn:aws:s3:::"
+                  -
+                    Ref: TipsReminderIntegrationsBucket
+                  - "/*"
+            Principal:
+              AWS: !Sub ${AWS::AccountId}

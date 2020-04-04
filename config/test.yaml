@@ -1,0 +1,9 @@
+app:
+  service: tips-reminder
+  jwtSecretKey: tips-test-jwt-secret
+  region: us-east-2
+  jwtTTL: 1h # 1hr in ms
+
+tips:
+  tippersService:
+    baseUrl: ec2-18-220-17-117.us-east-2.compute.amazonaws.com

@@ -30,7 +30,7 @@ export interface IRecipient {
     lastName?: string;
     establishment: string;
     closed?: string;
-    insurance?: boolean;
+    insurance?: string;
     venmo?: string;
     paypal?: string;
     cashapp?: string;
@@ -44,6 +44,12 @@ export interface ITipJarClient {
 export interface ITipperServiceClient {
     getDueTippers(timestamp: number): Promise<ITipper[]>;
     updateTipper(tipper: ITipper): Promise<void>;
+}
+
+export interface GoogleSheetIntegration {
+    url: string;
+    mappings: { [ from: string ]: string }[];
+    skip?: number;
 }
 
 export interface ITwilioClient {
