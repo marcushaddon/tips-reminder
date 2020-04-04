@@ -1,0 +1,11 @@
+{
+  "name": "tips-reminder",
+  "version": "1.0.0",
+  "description": "Lambda for sending tip reminder prompts",
+  "main": "dist/handler.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Marcus Haddon",
+  "license": "ISC"
+}
