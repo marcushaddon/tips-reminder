@@ -28,8 +28,7 @@ export default class GoogleSheetClient implements ITipJarClient {
         const rows = [...Array(count).keys()].map(() => this.rows[Math.floor(Math.random() * this.rows.length)]);
         
         const recipients = rows.map(this.rowToRecipient.bind(this));
-        console.log(recipients);
-        return [];
+        return recipients;
     }
 
     public async updateRecipient(recipient: IRecipient): Promise<void> { }
@@ -39,10 +38,40 @@ export default class GoogleSheetClient implements ITipJarClient {
             throw new Error('Unable to fetch any recipients from tip jar');
         }
 
-        const integrationDocument= await this.s3.getObject({
-            Bucket: this.bucketName,
-            Key: `${this.tipJarId}/integration.json`
-        }).promise();
+        const details = await this.getIntegrationDetails();
+        this.rowMappings = details.mappings;
+
+        let sheetBody: string;
+        try {
+            const res = await axios({
+                method: 'GET',
+                url: details.url
+            });
+            sheetBody = res.data;
+        } catch (e) {
+            throw new Error('Unable to fetch public Google Sheet');
+        }
+
+        const parsed = sync(
+            sheetBody,
+            {
+                skip_lines_with_empty_values: true,
+                from_line:  details.skip || 1}
+        );
+        this.rows = parsed;
+    }
+
+    private async getIntegrationDetails(): Promise<GoogleSheetIntegration> {
+        let integrationDocument: S3.GetObjectOutput;
+        try {
+            integrationDocument = await this.s3.getObject({
+                Bucket: this.bucketName,
+                Key: `${this.tipJarId}/integration.json`
+            }).promise();
+        } catch (e) {
+            throw new Error(`Unable to fetch integration document for tip jar with id: ${this.tipJarId}`);
+        }
+        
 
         if (!integrationDocument) {
             throw new Error('Unable to fetch integration document from S3');
@@ -54,27 +83,8 @@ export default class GoogleSheetClient implements ITipJarClient {
         } catch (e) {
             throw new Error('Integration JSON was malformed');
         }
-        this.rowMappings = integrationDetails.mappings;
 
-        let sheetBody: string;
-        try {
-            console.log(integrationDetails.url);
-            const res = await axios({
-                method: 'GET',
-                url: integrationDetails.url
-            });
-            sheetBody = res.data;
-        } catch (e) {
-            throw new Error('Unable to fetch public Google Sheet');
-        }
-
-        const parsed = sync(
-            sheetBody,
-            {
-                skip_lines_with_empty_values: true,
-                from_line:  integrationDetails.skip || 1}
-        );
-        this.rows = parsed;
+        return integrationDetails;
     }
 
     private rowToRecipient(line: string[]): IRecipient {
