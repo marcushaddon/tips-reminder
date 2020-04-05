@@ -55,5 +55,12 @@ export interface GoogleSheetIntegration {
 }
 
 export interface ITwilioClient {
-    sendText(phoneNumber: string, message: string): Promise<void>;
+    sendText(phoneNumber: string, message: string): Promise<ITextResult>;
+}
+
+export interface ITextResult {
+    sid: string;
+    cost: string;
+    errorCode?: number;
+    errorMessage?: string;
 }
