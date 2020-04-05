@@ -17,7 +17,7 @@ const tippersClient = new TipperServiceClient();
                 tipJarId: 'atx',
                 timezone: 'America/Los_Angeles'
             }],
-            dirty: true
+            dirty: false
         },
         {
             role: 'tipper',
@@ -31,7 +31,7 @@ const tippersClient = new TipperServiceClient();
                 tipJarId: 'atx',
                 timezone: 'America/Los_Angeles'
             }],
-            dirty: true
+            dirty: false
         }
     ];
     console.log(fakeTippers.map(ft => ft.nextScheduledTime));
@@ -39,6 +39,6 @@ const tippersClient = new TipperServiceClient();
         const res = await tippersClient.updateTipper(tipper);
         console.log(res);
     }
-    const tippers = await tippersClient.getDueTippers(new Date().getTime() + 24 * 60 * 60 * 1000);
+    const tippers = await tippersClient.getDueTippers(new Date().getTime());
     console.log(tippers);
 })();
