@@ -1,4 +1,4 @@
-import axios, { AxiosStatic } from 'axios';
+import axios, { AxiosStatic, AxiosRequestConfig } from 'axios';
 import { ITipperServiceClient, ITipper } from '../../model';
 import JWTAuthenticator from '../auth/JWTAuthenticator';
 import config from 'config';
@@ -16,7 +16,7 @@ export default class TipperServiceClient implements ITipperServiceClient {
         baseUrl = tipsConfig.get('tippersService').get('baseUrl'),
         auth = new JWTAuthenticator()
     } = {}) {
-        this.http = axios;
+        this.http = http;
         this.baseUrl = baseUrl;
         this.auth = auth;
     }
@@ -24,17 +24,29 @@ export default class TipperServiceClient implements ITipperServiceClient {
         const url = `${this.baseUrl}/users?role=tippers&next_scheduled_lte=${time}`;
 
         const headers = await this.getHeaders();
-        const res = await this.http({
+        const params: AxiosRequestConfig = {
             method: 'GET',
             url,
             headers
-        });
+        };
+        console.log(params);
+        const res = await this.http(params);
 
         return res.data;
     }
 
     public async updateTipper(tipper: ITipper): Promise<void> {
-        
+        const headers = await this.getHeaders();
+        const params: AxiosRequestConfig = {
+            method: 'PATCH',
+            url: `${this.baseUrl}/users`,
+            headers,
+            data: JSON.stringify([ tipper ])
+        };
+
+        const res = await this.http(params);
+
+        return res.data;
     }
 
     private async getHeaders() {

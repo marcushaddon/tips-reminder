@@ -16,12 +16,14 @@ export interface ISchedule {
 }
 
 export interface ITipper {
+    role: 'tipper';
     phoneNumber: string;
     nextScheduled: string;
     nextScheduledTime: number;
     schedules: ISchedule[];
     firstName?: string;
     lastName?: string;
+    dirty?: boolean;
 }
 
 export interface IRecipient {

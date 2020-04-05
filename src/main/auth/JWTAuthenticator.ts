@@ -22,7 +22,7 @@ export default class JWTAuthenticator {
         const ttl = parseInt(appConfig.jwtTTTL);
         
         const token = this.jwt.sign(
-            { role: 'appService' },
+            { user: { role: 'appService' } },
             this._cachedSecret as string,
             { expiresIn: appConfig.jwtTTL }
         );
