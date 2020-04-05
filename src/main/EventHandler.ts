@@ -3,13 +3,14 @@ import logger from './logging/logger';
 import {
     IReminderEvent,
     ITipper,
-    ISchedule
+    ISchedule,
+    ITipperServiceClient
 } from '../model';
 
 import TipperServiceClient from './client/TipperServiceClient';
 
 export interface IEventHandlerParams {
-    tipperServiceClient: TipperServiceClient;
+    tipperService: ITipperServiceClient;
 }
 
 interface ITipperSchedule {
@@ -18,10 +19,10 @@ interface ITipperSchedule {
 }
 
 export default class EventHandler {
-    private tipperService: TipperServiceClient;
+    private tipperService: ITipperServiceClient;
     constructor({
-        tipperService = new TipperServiceClient()
-    }) {
+        tipperService
+    }: IEventHandlerParams = { tipperService: new TipperServiceClient() }) {
         this.tipperService = tipperService;
     }
 
@@ -29,7 +30,7 @@ export default class EventHandler {
         const { time } = event;
         // Fetch tippers
         const tippers = await this.tipperService.getDueTippers(time);
-        logger.info(`Fetched ${tippers.length} tippers due at time ${time}`);
+        logger.info(`Fetched ${tippers.length} tippers due at time ${new Date(time).toISOString()}`);
 
         // Group schedules+tippers by tipJarId
         const tipjarSchedules = getScheduleGroups(tippers);
@@ -59,7 +60,7 @@ const getScheduleGroups = (tippers: ITipper[]):  { [ tipJarId: string ]: ITipper
     for (let tipper of tippers) {
         tipper.schedules
             .filter(due)
-            .forEach(schedule => groups[schedule.tipJarId])
+            .forEach(schedule => groups[schedule.tipJarId].push({ schedule, tipper }))
 
     }
 

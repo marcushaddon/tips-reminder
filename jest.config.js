@@ -5,6 +5,9 @@ module.exports = {
     testMatch: [
       "**/?(*.)+(spec|test).+(ts|tsx|js)"
     ],
+    testPathIgnorePatterns: [
+      ".*integration.*"
+    ],
     "transform": {
       "^.+\\.(ts|tsx)$": "ts-jest"
     },

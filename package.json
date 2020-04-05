@@ -27,6 +27,7 @@
     "csv-parse": "^4.8.8",
     "jsonwebtoken": "^8.5.1",
     "object-mapper": "^6.2.0",
+    "twilio": "^3.42.0",
     "winston": "^3.2.1"
   }
 }
