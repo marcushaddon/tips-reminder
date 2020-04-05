@@ -27,15 +27,23 @@ export default class EventHandler {
     }
 
     async handleEvent(event: IReminderEvent): Promise<void> {
-        const { time } = event;
+        let { time } = event;
         // Fetch tippers
         const tippers = await this.tipperService.getDueTippers(time);
         logger.info(`Fetched ${tippers.length} tippers due at time ${new Date(time).toISOString()}`);
 
         // Group schedules+tippers by tipJarId
-        const tipjarSchedules = getScheduleGroups(tippers);
+        let tipperSchedules: ITipperSchedule[] = [];
+        for (let tipper of tippers) {
+            const tscheds = tipper.schedules.map(schedule => ({ tipper, schedule}))
+            tipperSchedules = tipperSchedules.concat(tscheds);
+        }
+
+        const dueSchedules = tipperSchedules.filter(ts => due(ts.schedule, time));
+        logger.info(`Total schedules due: ${dueSchedules.length}`);
         
-        logger.info('Grouped due schedules by tipJarId');
+        const groups = groupTipJarSchedules(dueSchedules);
+        logger.info(`Grouped due schedules by tipJarId into ${ Object.keys(groups).length} groups`);
         
         // For tipJarId
             // Fetch recipients
@@ -50,19 +58,21 @@ export default class EventHandler {
     }
 }
 
-const due = (schedule: ISchedule): boolean => cronparser
+// TODO: .next() will ALWAYS be in the future?!?!
+const due = (schedule: ISchedule, asOf: number): boolean => cronparser
     .parseExpression(schedule.cron, { tz: schedule.timezone })
     .next()
-    .getTime() <= new Date().getTime();
+    .getTime() <= asOf - 1;
 
-const getScheduleGroups = (tippers: ITipper[]):  { [ tipJarId: string ]: ITipperSchedule[] } => {
+const groupTipJarSchedules = (tipperSchedules: ITipperSchedule[]):  { [ tipJarId: string ]: ITipperSchedule[] } => {
     const groups: { [ tipJarId: string ]: ITipperSchedule[] } = {};
-    for (let tipper of tippers) {
-        tipper.schedules
-            .filter(due)
-            .forEach(schedule => groups[schedule.tipJarId].push({ schedule, tipper }))
-
+    for (let tipperSched of tipperSchedules) {
+        if (!groups[tipperSched.schedule.tipJarId]) {
+            groups[tipperSched.schedule.tipJarId] = [tipperSched];
+        } else {
+            groups[tipperSched.schedule.tipJarId].push(tipperSched);
+        }
     }
 
-    return {};
+    return groups;
 }

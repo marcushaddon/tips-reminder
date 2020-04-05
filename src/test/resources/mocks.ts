@@ -1,6 +1,6 @@
 import { ITipperServiceClient } from '../../model';
 
-const mockTippersServiceClient: ITipperServiceClient = {
+const mockTippersServiceClient = {
     getDueTippers: jest.fn(),
     updateTipper: jest.fn()
 };
