@@ -10,3 +10,6 @@ tips:
 
 integrations:
   - atx
+
+sqs:
+  upstreamQueueUrl: TODO-URL

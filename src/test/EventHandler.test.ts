@@ -9,6 +9,7 @@ jest.mock('../main/client/GoogleSheetClient', () => {
 })
 
 import EventHandler from '../main/EventHandler';
+
 describe('EventHandler', () => {
     // =================================
     // SETUP
@@ -16,7 +17,9 @@ describe('EventHandler', () => {
     let uut: EventHandler;
     beforeEach(() => {
         uut = new EventHandler({
-            tipperService: mocks.mockTippersServiceClient
+            tipperService: mocks.mockTippersServiceClient,
+            twilioClient: mocks.mockTwilioClient,
+            notifyUpstream: mocks.mockMessageSelf
         });
     });
     afterEach(jest.clearAllMocks);
@@ -94,9 +97,32 @@ describe('EventHandler', () => {
         expect(mocks.mockGoogleSheetsClient.getRandomRecipients).toHaveBeenCalledTimes(3);
     });
 
-    // Ignores schedules that arent due
-    // Calls sendText once for every due tipper
+    // Calls sendText once for every due schedule tipper
+    it('Sends one notification for each due schedule', async () => {
+        const res = await uut.handleEvent(mockEvent);
+        const expectedCount = mockDueTippers
+            .map(mdt => mdt.schedules)
+            .reduce((acc, curr) => [...acc, ...curr], [])
+            .filter(sch => sch.nextScheduledTime <= FOUR_TWENTY)
+            .length;
+        expect(mocks.mockTwilioClient.sendText).toHaveBeenCalledTimes(expectedCount);
+    });
+
     // Updates each sucessfully texted due tipper
+    it('Updates each successfully texted tipper', async () => {
+        const res = await uut.handleEvent(mockEvent);
+        const textCount = mocks.mockTwilioClient.sendText.mock.calls.length;
+        expect(mocks.mockTippersServiceClient.updateTipper).toHaveBeenCalledTimes(textCount);
+    });
     // Makes random pairs
+
     // Schedules next page
+    it('Paginates as long as it receives a non-empty response for due tippers', async () => {
+        const res = await uut.handleEvent(mockEvent);
+        expect(mocks.mockMessageSelf).toHaveBeenCalledTimes(1);
+
+        mocks.mockTippersServiceClient.getDueTippers.mockResolvedValueOnce([]);
+        const secondRes = await uut.handleEvent(mockEvent);
+        expect(mocks.mockMessageSelf).toHaveBeenCalledTimes(1);
+    })
 });

@@ -5,16 +5,24 @@ import {
     IReminderEvent,
     ITipper,
     ISchedule,
-    ITipperServiceClient
+    IRecipient,
+    ITipperServiceClient,
+    ITwilioClient
 } from '../model';
 
 import TipperServiceClient from './client/TipperServiceClient';
 import GoogleSheetClient from './client/GoogleSheetClient';
+import { singleton as twilioSingleton } from './client/TwilioClient';
+import formatMessage from './utilities/formatMessage';
+import messageSelf from './client/messageSelf';
+
 
 const integrationConfig = (config as any).get('integrations');
 
 export interface IEventHandlerParams {
     tipperService: ITipperServiceClient;
+    twilioClient: ITwilioClient;
+    notifyUpstream: (message: any) => Promise<void>;
 }
 
 interface ITipperSchedule {
@@ -24,10 +32,20 @@ interface ITipperSchedule {
 
 export default class EventHandler {
     private tipperService: ITipperServiceClient;
+    private twilioClient: ITwilioClient;
+    private notifyUpstream: (message: any) => Promise<void>;
     constructor({
-        tipperService
-    }: IEventHandlerParams = { tipperService: new TipperServiceClient() }) {
+        tipperService,
+        twilioClient,
+        notifyUpstream
+    }: IEventHandlerParams = {
+        tipperService: new TipperServiceClient(),
+        twilioClient: twilioSingleton,
+        notifyUpstream: messageSelf
+    }) {
         this.tipperService = tipperService;
+        this.twilioClient = twilioClient;
+        this.notifyUpstream = notifyUpstream;
     }
 
     async handleEvent(event: IReminderEvent): Promise<void> {
@@ -36,10 +54,14 @@ export default class EventHandler {
         const tippers = await this.tipperService.getDueTippers(time);
         logger.info(`Fetched ${tippers.length} tippers due at time ${new Date(time).toISOString()}`);
 
-        // Group schedules+tippers by tipJarId
+        if (tippers.length === 0) {
+            logger.info('No tippers due, exiting');
+            return;
+        }
+
         let tipperSchedules: ITipperSchedule[] = [];
         for (let tipper of tippers) {
-            const tscheds = tipper.schedules.map(schedule => ({ tipper, schedule}))
+            const tscheds = tipper.schedules.map(schedule => ({ tipper, schedule }))
             tipperSchedules = tipperSchedules.concat(tscheds);
         }
 
@@ -58,17 +80,56 @@ export default class EventHandler {
             logger.info(`Creating prompts for tipJar id: ${tipJarId}`)
             const sheetClient = new GoogleSheetClient(tipJarId);
             const tipperSchedules = groups[tipJarId];
-            const recipients = sheetClient.getRandomRecipients(tipperSchedules.length);
-        }
-            // Fetch recipients
-            // Make random pairings
-            // For pairing
-                // Send text
-                // Update tipper
-                // Maybe update recipient
+            const recipients = await sheetClient.getRandomRecipients(tipperSchedules.length);
+            logger.info(`Fetched ${recipients.length} recipient from tipJar ${tipJarId}`);
 
+            // TODO: Randomize!
             
-        // Schedule next page
+            const tippersToUpdate = await this.sendTexts(tipperSchedules, recipients);
+            await this.updateTippers(tippersToUpdate);
+        }
+
+        await this.notifyUpstream(event);
+    }
+
+    // NOTE: Assumes all schedules and recipients are from same tip jar 
+    private async sendTexts(tipperSchedules: ITipperSchedule[], recipients: IRecipient[]) {
+        const pairs = this.makePairs(tipperSchedules, recipients);
+        const textedTippers = new Map<string, ITipper>();
+        for (let pair of pairs) {
+            const [ { tipper, schedule }, recipient ] = pair;
+            const message = formatMessage(tipper, schedule, recipient);
+
+            logger.info(`Sending text to ${tipper.phoneNumber}`, { message });
+            try {
+                const res = await this.twilioClient.sendText(pair[0].tipper.phoneNumber, message);
+                logger.info(`Successfully texted ${tipper.phoneNumber}`, { sid: res.sid });
+                textedTippers.set(tipper.phoneNumber, tipper);
+            } catch (e) {
+                logger.error(`Encountered error sending text to ${tipper.phoneNumber}`, e);
+            }
+        }
+
+        return [...textedTippers.values()];
+    }
+
+    private makePairs(tipperSchedules: ITipperSchedule[], recipients: IRecipient[]) {
+        return tipperSchedules.map((ts, i): [ITipperSchedule, IRecipient] => [ts, recipients[i]]);
+    }
+
+    private async updateTippers(tippers: ITipper[]) {
+        const proms = tippers.map(async t => {
+            const updated = { ...t, dirty: true };
+            try {
+                await this.tipperService.updateTipper(updated);
+                logger.info(`Successfully updated ${t.phoneNumber}`);
+            } catch (e) {
+                logger.error(`Encountered error updating ${t.phoneNumber}`, e);
+            }
+            
+        });
+
+        await Promise.all(proms);
     }
 }
 

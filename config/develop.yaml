@@ -2,3 +2,6 @@ integrations:
   - A
   - B
   - C
+
+sqs:
+  upstreamQueueUrl: test-url
