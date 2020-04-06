@@ -69,7 +69,6 @@ export default class GoogleSheetClient implements ITipJarClient {
         } catch (e) {
             throw new Error(`Unable to fetch integration document for tip jar with id: ${this.tipJarId}`);
         }
-        
 
         if (!integrationDocument) {
             throw new Error('Unable to fetch integration document from S3');

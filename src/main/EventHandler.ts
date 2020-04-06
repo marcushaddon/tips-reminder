@@ -89,7 +89,14 @@ export default class EventHandler {
             await this.updateTippers(tippersToUpdate);
         }
 
-        await this.notifyUpstream(event);
+        try {
+            await this.notifyUpstream(event);
+            logger.info('Successfully triggered continuation');
+        } catch {
+            logger.error('Encountered error while notifying upsteam', e);
+        }
+        
+        
     }
 
     // NOTE: Assumes all schedules and recipients are from same tip jar 

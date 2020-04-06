@@ -22,9 +22,15 @@ const mockTwilioClient = {
 
 const mockMessageSelf = jest.fn().mockResolvedValue({ MessageId: 'test-id' });
 
+const mockLogger = {
+    info: jest.fn(),
+    error: jest.fn()
+}
+
 export {
     mockTippersServiceClient,
     mockGoogleSheetsClient,
     mockTwilioClient,
     mockMessageSelf,
+    mockLogger,
 }

@@ -6,7 +6,9 @@ jest.mock('../main/client/GoogleSheetClient', () => {
     return function() {
         return mocks.mockGoogleSheetsClient;
     }
-})
+});
+
+jest.mock('../main/logging/logger', () => mocks.mockLogger);
 
 import EventHandler from '../main/EventHandler';
 
@@ -98,7 +100,7 @@ describe('EventHandler', () => {
     });
 
     // Calls sendText once for every due schedule tipper
-    it('Sends one notification for each due schedule', async () => {
+    it('#handleEvent sends one notification for each due schedule', async () => {
         const res = await uut.handleEvent(mockEvent);
         const expectedCount = mockDueTippers
             .map(mdt => mdt.schedules)
@@ -109,7 +111,7 @@ describe('EventHandler', () => {
     });
 
     // Updates each sucessfully texted due tipper
-    it('Updates each successfully texted tipper', async () => {
+    it('#handleEvent updates each successfully texted tipper', async () => {
         const res = await uut.handleEvent(mockEvent);
         const textCount = mocks.mockTwilioClient.sendText.mock.calls.length;
         expect(mocks.mockTippersServiceClient.updateTipper).toHaveBeenCalledTimes(textCount);
@@ -117,12 +119,19 @@ describe('EventHandler', () => {
     // Makes random pairs
 
     // Schedules next page
-    it('Paginates as long as it receives a non-empty response for due tippers', async () => {
+    it('#handleEvent paginates as long as it receives a non-empty response for due tippers', async () => {
         const res = await uut.handleEvent(mockEvent);
         expect(mocks.mockMessageSelf).toHaveBeenCalledTimes(1);
 
         mocks.mockTippersServiceClient.getDueTippers.mockResolvedValueOnce([]);
         const secondRes = await uut.handleEvent(mockEvent);
         expect(mocks.mockMessageSelf).toHaveBeenCalledTimes(1);
-    })
+    });
+
+    // Handles one error (still texts/updates rest of tippers)
+    it('#handleEvent gracefully handles sporadic errors', async () => {
+        mocks.mockTwilioClient.sendText.mockRejectedValueOnce({ error: 'oh no' });
+        const res = uut.handleEvent(mockEvent);
+        expect(mocks.mockLogger.error).toHaveBeenCalledTimes(1);
+    });
 });

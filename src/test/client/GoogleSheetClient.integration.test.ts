@@ -3,6 +3,7 @@ import GoogleSheetsClient from '../../main/client/GoogleSheetClient';
 
 (async () => {
     const integrations = config.get('integrations') as string[];
+    console.log('Smoke testing integrations', integrations);
     for (let int of integrations) {
         const gsc = new GoogleSheetsClient(int);
         const start = new Date().getTime();
