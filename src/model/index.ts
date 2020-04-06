@@ -11,6 +11,7 @@ export interface ISQSReminderEvent {
 export interface ISchedule {
     tipJarId: string;
     cron: string;
+    nextScheduledTime: number;
     for?: string;
     timezone: string;
 }

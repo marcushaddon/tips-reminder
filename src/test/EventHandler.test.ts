@@ -1,8 +1,14 @@
 import * as model from '../model';
-import EventHandler from '../main/EventHandler';
 import * as mocks from './resources/mocks';
-import TipperServiceClient from '../main/client/TipperServiceClient';
 
+// These are new'd up per tipJar
+jest.mock('../main/client/GoogleSheetClient', () => {
+    return function() {
+        return mocks.mockGoogleSheetsClient;
+    }
+})
+
+import EventHandler from '../main/EventHandler';
 describe('EventHandler', () => {
     // =================================
     // SETUP
@@ -20,7 +26,10 @@ describe('EventHandler', () => {
     const mockEvent = {
         traceId: 'test-job',
         time: FOUR_TWENTY
-    }
+    };
+
+    const mockD = new Date(FOUR_TWENTY);
+    (Date as any) = function() { return mockD; };
 
     // Three tipJars across two users
     const mockDueTippers: model.ITipper[] = [
@@ -32,11 +41,13 @@ describe('EventHandler', () => {
             schedules: [
                 {
                     cron: '0 0 4 * * 0',
+                    nextScheduledTime: FOUR_TWENTY,
                     for: 'testing',
                     timezone: 'America/Los_Angeles',
                     tipJarId: 'A'
                 }, {
                     cron: '0 0 4 * * 0',
+                    nextScheduledTime: FOUR_TWENTY - 100,
                     for: 'testing',
                     timezone: 'America/Los_Angeles',
                     tipJarId: 'B'
@@ -53,9 +64,11 @@ describe('EventHandler', () => {
                     cron: '0 0 6 * * 1',
                     for: 'testing',
                     timezone: 'America/Los_Angeles',
-                    tipJarId: 'B'
+                    tipJarId: 'B',
+                    nextScheduledTime: FOUR_TWENTY + 50 * 60 * 1000 
                 }, {
                     cron: '0 0 4 * * 0',
+                    nextScheduledTime: FOUR_TWENTY - 2000,
                     for: 'testing',
                     timezone: 'America/Los_Angeles',
                     tipJarId: 'C'

@@ -1,4 +1,5 @@
 import cronparser from 'cron-parser';
+import config from 'config';
 import logger from './logging/logger';
 import {
     IReminderEvent,
@@ -8,6 +9,9 @@ import {
 } from '../model';
 
 import TipperServiceClient from './client/TipperServiceClient';
+import GoogleSheetClient from './client/GoogleSheetClient';
+
+const integrationConfig = (config as any).get('integrations');
 
 export interface IEventHandlerParams {
     tipperService: ITipperServiceClient;
@@ -39,13 +43,23 @@ export default class EventHandler {
             tipperSchedules = tipperSchedules.concat(tscheds);
         }
 
-        const dueSchedules = tipperSchedules.filter(ts => due(ts.schedule, time));
+        const dueSchedules = tipperSchedules.filter(ts => due(ts.schedule));
         logger.info(`Total schedules due: ${dueSchedules.length}`);
-        
+
         const groups = groupTipJarSchedules(dueSchedules);
         logger.info(`Grouped due schedules by tipJarId into ${ Object.keys(groups).length} groups`);
         
         // For tipJarId
+        for (let tipJarId in groups) {
+            if (integrationConfig.indexOf(tipJarId) === -1) {
+                logger.error(`Encountered unknown tipJarId: ${tipJarId} ${integrationConfig}`);
+                continue;
+            }
+            logger.info(`Creating prompts for tipJar id: ${tipJarId}`)
+            const sheetClient = new GoogleSheetClient(tipJarId);
+            const tipperSchedules = groups[tipJarId];
+            const recipients = sheetClient.getRandomRecipients(tipperSchedules.length);
+        }
             // Fetch recipients
             // Make random pairings
             // For pairing
@@ -59,10 +73,7 @@ export default class EventHandler {
 }
 
 // TODO: .next() will ALWAYS be in the future?!?!
-const due = (schedule: ISchedule, asOf: number): boolean => cronparser
-    .parseExpression(schedule.cron, { tz: schedule.timezone })
-    .next()
-    .getTime() <= asOf - 1;
+const due = (schedule: ISchedule): boolean => schedule.nextScheduledTime <= new Date().getTime();
 
 const groupTipJarSchedules = (tipperSchedules: ITipperSchedule[]):  { [ tipJarId: string ]: ITipperSchedule[] } => {
     const groups: { [ tipJarId: string ]: ITipperSchedule[] } = {};

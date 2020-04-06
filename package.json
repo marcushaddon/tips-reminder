@@ -4,7 +4,7 @@
   "description": "Lambda for sending tip reminder prompts",
   "main": "dist/handler.js",
   "scripts": {
-    "test": "export NODE_ENV=test && jest src --coverage",
+    "test": "export NODE_ENV=develop && jest src --coverage",
     "test-e2e": "jest src --coverage"
   },
   "author": "Marcus Haddon",
