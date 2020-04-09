@@ -7,6 +7,7 @@ const eventHandler = new EventHandler();
 
 const onEvent = async (event: ISQSReminderEvent, context: any): Promise<void> => {
     const message = extractMessage(event);
+    console.log('Just testing');
     logger.info('Received message', { message });
 
     try {

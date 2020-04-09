@@ -1,4 +1,3 @@
-import cronparser from 'cron-parser';
 import config from 'config';
 import logger from './logging/logger';
 import {

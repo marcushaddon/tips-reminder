@@ -1,13 +1,14 @@
 {
-    "url": "https://docs.google.com/spreadsheets/d/1DrGpI7WdTEndUetSBePBFSxbQ81pRouvAFhK4jWBXPI/export?format=csv",
+    "url": "https://docs.google.com/spreadsheets/d/1aQ-kUI6Sb18PCiTu_gFLP3VxnK0afxwvGke3AmM--5o/export?format=csv",
     "mappings": [
         { "[0]": "establishment" },
         { "[1]": "firstName" },
         { "[2]": "closed" },
-        { "[3]": "venmo" },
-        { "[3]": "paypal" },
-        { "[3]": "cashapp" },
-        { "[4]": "insurance" }
+        { "[4]": "insurance" },
+        { "[5]": "venmo" },
+        { "[6]": "paypal" },
+        { "[7]": "cashapp" }
+
     ],
     "skip": 2
 }

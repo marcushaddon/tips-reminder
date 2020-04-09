@@ -23,10 +23,15 @@ export default class GoogleSheetClient implements ITipJarClient {
         if (this.rows.length === 0) {
             await this.fetchRecipients();
         }
-        const rows = [...Array(count).keys()].map(() => this.rows[Math.floor(Math.random() * this.rows.length)]);
+        // TODO: REFACTOR FOR EFFICIENCY
+        const validRecipients = this.rows
+            .map(this.rowToRecipient.bind(this))
+            .filter(r => r.venmo || r.paypal || r.cashapp);
         
-        const recipients = rows.map(this.rowToRecipient.bind(this));
-        return recipients;
+        const randomRecipients = [...Array(count).keys()]
+            .map(() => validRecipients[Math.floor(Math.random() * validRecipients.length)]);
+        
+        return randomRecipients;
     }
 
     public async updateRecipient(recipient: IRecipient): Promise<void> { }
