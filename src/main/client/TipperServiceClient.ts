@@ -2,6 +2,7 @@ import axios, { AxiosStatic, AxiosRequestConfig } from 'axios';
 import { ITipperServiceClient, ITipper } from '../../model';
 import JWTAuthenticator from '../auth/JWTAuthenticator';
 import config from 'config';
+import logger from '../logging/logger';
 
 const appConfig = (config as any).get('app');
 const tipsConfig = (config as any).get('tips');
@@ -29,10 +30,10 @@ export default class TipperServiceClient implements ITipperServiceClient {
             url,
             headers
         };
-        console.log(params);
+
         const res = await this.http(params);
 
-        return res.data;
+        return res.data.items;
     }
 
     public async updateTipper(tipper: ITipper): Promise<void> {

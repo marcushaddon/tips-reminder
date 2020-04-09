@@ -1,16 +1,16 @@
-import { ISQSReminderEvent, IReminderEvent } from './model';
+import { ISQSReminderEvent, IReminderEvent } from '../model';
 import config from 'config';
-import logger from './main/logging/logger';
-import EventHandler from './main/EventHandler';
+import logger from './logging/logger';
+import EventHandler from './EventHandler';
 const eventHandler = new EventHandler();
-const appConfig = config.get('app');
+
 
 const onEvent = async (event: ISQSReminderEvent, context: any): Promise<void> => {
     const message = extractMessage(event);
     logger.info('Received message', { message });
 
     try {
-        eventHandler.handleEvent(message);
+        await eventHandler.handleEvent(message);
     } catch (e) {
         logger.error('Encountered error processing message', e);
         throw e;

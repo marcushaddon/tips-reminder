@@ -8,6 +8,54 @@ Parameters:
     Default: test
   
 Resources:
+  TipsReminderRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Action:
+              - "sts:AssumeRole"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+      Description: Execution role for reminder lambda
+      RoleName: tips.reminder
+  S3Policy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: blackline.dsco.s3
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - "s3:GetObject"
+              - "s3:PutObject"
+              - "s3:ListObject"
+            Resource:
+              - "arn:aws:s3:::nike-finrec-*-blackline-*"
+              - "arn:aws:s3:::nike-finrec-*-blackline-*/*"
+      Roles:
+        - Ref: "TipsReminderRole"
+  SqsPolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: blackline.dsco.sqs
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - "sqs:*"
+            Resource:
+              - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:blackline-dsco*"
+              - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:blackline-ingest*"
+      Roles:
+        - Ref: "TipsReminderRole"
+  
   TipsReminderIntegrationsBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
@@ -34,3 +82,21 @@ Resources:
                   - "/*"
             Principal:
               AWS: !Sub ${AWS::AccountId}
+  TipsReminderQueue:
+    Type: "AWS::SQS::Queue"
+    Properties:
+      DelaySeconds: 300
+      QueueName: !Sub tips-${Environment}-reminder
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt TipsReminderDLQ.Arn
+        maxReceiveCount: 5
+      VisibilityTimeout: 300
+      MessageRetentionPeriod: 1209600
+  TipsReminderDLQ:
+    Type: "AWS::SQS::Queue"
+    Properties:
+      MessageRetentionPeriod: 1209600
+      QueueName: !Sub tips-${Environment}-reminder-dlq
+  
+
+  

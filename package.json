@@ -5,7 +5,8 @@
   "main": "dist/handler.js",
   "scripts": {
     "test": "export NODE_ENV=develop && jest src --coverage",
-    "test-e2e": "jest src --coverage"
+    "test-e2e": "jest src --coverage",
+    "build": "tsc --rootDir src --outDir dist"
   },
   "author": "Marcus Haddon",
   "license": "ISC",
@@ -17,10 +18,10 @@
     "@types/winston": "^2.4.4",
     "jest": "^25.2.7",
     "serverless": "^1.67.0",
-    "ts-jest": "^25.3.1"
+    "ts-jest": "^25.3.1",
+    "aws-sdk": "^2.653.0"
   },
   "dependencies": {
-    "aws-sdk": "^2.653.0",
     "axios": "^0.19.2",
     "config": "^3.3.1",
     "cron-parser": "^2.13.0",

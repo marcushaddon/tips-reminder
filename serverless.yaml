@@ -1,0 +1,28 @@
+service: tips-reminder
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+  stage: stage, 'dev'
+  region: region, 'us-east-2'
+  memorySize: 128
+  timeout: 3
+
+
+functions:
+  tipsReminder:
+    handler: dist/main/handler.onEvent
+    name: tips-${opt:stage}-reminder
+    description: > 
+      Queries for tippers who are due reminders, fetches random
+      recipients from appropriate tip jars and sends texts.
+    runtime: nodejs10.x
+    layers:
+      - arn:aws:lambda:us-east-2:866624143450:layer:tips-common:1
+    environment:
+      NODE_ENV: ${opt:stage}
+    memorySize: 128
+    timeout: 3
+    events:
+
+

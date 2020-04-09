@@ -49,8 +49,9 @@ export default class EventHandler {
     }
 
     async handleEvent(event: IReminderEvent): Promise<void> {
-        let { time } = event;
         // Fetch tippers
+        const time = new Date().getTime();
+        logger.info(`Fetching users due at time ${time}`);
         const tippers = await this.tipperService.getDueTippers(time);
         logger.info(`Fetched ${tippers.length} tippers due at time ${new Date(time).toISOString()}`);
 
@@ -92,7 +93,7 @@ export default class EventHandler {
         try {
             await this.notifyUpstream(event);
             logger.info('Successfully triggered continuation');
-        } catch {
+        } catch (e) {
             logger.error('Encountered error while notifying upsteam', e);
         }
         

@@ -1,6 +1,5 @@
 export interface IReminderEvent {
     traceId: string;
-    time: number;
     continuationToken?: string;
 }
 
