@@ -2,7 +2,7 @@ import { ITipper, IRecipient, ISchedule } from '../../model';
 
 const formatMessage = (tipper: ITipper, schedule: ISchedule, recipient: IRecipient): string => {
     const tipFor = schedule.for ? 'for your ' + schedule.for : 'to keep the service industry alive';
-    const tname = tipper.firstName || 'Good Tipper';
+    const tname = tipper.firstName || 'there';
     const rname = recipient.firstName || 'someone in the service industry';
     const link = recipient.paypal ? `PayPal: ${recipient.paypal}` :
     recipient.venmo ? `https://www.venmo.com/${recipient.venmo}` :

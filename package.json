@@ -18,7 +18,6 @@
     "@types/winston": "^2.4.4",
     "jest": "^25.2.7",
     "serverless": "^1.67.0",
-    "ts-jest": "^25.3.1",
     "aws-sdk": "^2.653.0",
     "axios": "^0.19.2",
     "config": "^3.3.1",
@@ -29,7 +28,5 @@
     "twilio": "^3.42.0",
     "winston": "^3.2.1"
   },
-  "dependencies": {
-    
-  }
+  "dependencies": {}
 }
