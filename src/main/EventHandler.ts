@@ -47,7 +47,7 @@ export default class EventHandler {
         this.notifyUpstream = notifyUpstream;
     }
 
-    async handleEvent(event: IReminderEvent): Promise<void> {
+    async handleEvent(): Promise<void> {
         // Fetch tippers
         const time = new Date().getTime();
         logger.info(`Fetching users due at time ${time}`);

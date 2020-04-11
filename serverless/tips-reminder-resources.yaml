@@ -7,7 +7,6 @@ Parameters:
     Type: String
     Description: The test or prod basically
     Default: test
-  
 Resources:
   TipsReminderRole:
     Type: "AWS::IAM::Role"
@@ -35,7 +34,7 @@ Resources:
             Action: 
               - "secretsmanager:GetSecretValue"
             Resource: 
-              - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:tips-test-jwt-secret-*"
+              - !Sub "arn:aws:secretsmanager:${self:custom.aws.region}:${self:custom.aws.accountId}:secret:tips-test-jwt-secret-*"
       Roles:
         - Ref: "TipsReminderRole"
   S3Policy:
@@ -65,14 +64,14 @@ Resources:
             Action:
               - "sqs:*"
             Resource:
-              - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:tips-*-reminder"
+              - !Sub "arn:aws:sqs:${self:custom.aws.region}:${self:custom.aws.accountId}:tips-*-reminder"
       Roles:
         - Ref: "TipsReminderRole"
   TipsReminderIntegrationsBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
     Properties:
-      BucketName: !Sub tips-${Environment}-reminder-integrations
+      BucketName: !Sub tips-${opt:stage}-reminder-integrations
       AccessControl: BucketOwnerFullControl
   TipsReminderIntegrationsBucketPolicy:
     Type: AWS::S3::BucketPolicy
@@ -93,12 +92,12 @@ Resources:
                     Ref: TipsReminderIntegrationsBucket
                   - "/*"
             Principal:
-              AWS: !Sub ${AWS::AccountId}
+              AWS: !Sub ${self:custom.aws.accountId}
   TipsReminderQueue:
     Type: "AWS::SQS::Queue"
     Properties:
       DelaySeconds: 300
-      QueueName: !Sub tips-${Environment}-reminder
+      QueueName: !Sub tips-${opt:stage}-reminder
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt TipsReminderDLQ.Arn
         maxReceiveCount: 5
@@ -108,7 +107,24 @@ Resources:
     Type: "AWS::SQS::Queue"
     Properties:
       MessageRetentionPeriod: 1209600
-      QueueName: !Sub tips-${Environment}-reminder-dlq
-  
-
-  
+      QueueName: !Sub tips-${opt:stage}-reminder-dlq
+  ReminderRule: 
+    Type: AWS::Events::Rule
+    Properties: 
+      Description: "Runs reminder every hour on the hour"
+      ScheduleExpression: cron(1 * * * * *)
+      State: "ENABLED"
+      Targets: 
+        - 
+          Arn: !Sub arn:aws:lambda:${self:custom.aws.region}:${self:custom.aws.accountId}:tips-${opt:stage}-reminder
+          Id: "TipsReminder"
+  PermissionForEventsToInvokeLambda: 
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Sub tips-${opt:stage}-reminder
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: 
+        Fn::GetAtt: 
+          - "ReminderRule"
+          - "Arn"

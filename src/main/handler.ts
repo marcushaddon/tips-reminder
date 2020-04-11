@@ -6,12 +6,10 @@ const eventHandler = new EventHandler();
 
 
 const onEvent = async (event: ISQSReminderEvent, context: any): Promise<void> => {
-    const message = extractMessage(event);
-
-    logger.info('Received message', { message });
+    logger.info('Received event', { event });
 
     try {
-        await eventHandler.handleEvent(message);
+        await eventHandler.handleEvent();
     } catch (e) {
         logger.error('Encountered error processing message', e);
         throw e;
