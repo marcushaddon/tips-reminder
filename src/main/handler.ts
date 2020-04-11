@@ -1,5 +1,5 @@
 import { ISQSReminderEvent, IReminderEvent } from '../model';
-import config from 'config';
+import config from '../config';
 import logger from './logging/logger';
 import EventHandler from './EventHandler';
 const eventHandler = new EventHandler();
@@ -7,7 +7,7 @@ const eventHandler = new EventHandler();
 
 const onEvent = async (event: ISQSReminderEvent, context: any): Promise<void> => {
     const message = extractMessage(event);
-    console.log('Just testing');
+
     logger.info('Received message', { message });
 
     try {

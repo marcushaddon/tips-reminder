@@ -1,5 +1,5 @@
 import { SQS } from 'aws-sdk';
-import config from 'config';
+import config from '../../config';
 
 const appConfig = (config.get('app') as any).get('region');
 const upstreamQueueUrl = (config.get('sqs') as any).get('upstreamQueueUrl');

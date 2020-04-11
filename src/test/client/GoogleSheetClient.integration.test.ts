@@ -1,4 +1,4 @@
-import config from 'config';
+import config from '../../config';
 import GoogleSheetsClient from '../../main/client/GoogleSheetClient';
 
 (async () => {

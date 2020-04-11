@@ -1,7 +1,7 @@
 import axios from 'axios';
 import sync from 'csv-parse/lib/sync';
 import objectmapper from 'object-mapper';
-import config from 'config';
+import config from '../../config';
 import { S3 } from 'aws-sdk';
 import { ITipJarClient, IRecipient, GoogleSheetIntegration } from '../../model';
 

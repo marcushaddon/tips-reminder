@@ -1,7 +1,7 @@
 import axios, { AxiosStatic, AxiosRequestConfig } from 'axios';
 import { ITipperServiceClient, ITipper } from '../../model';
 import JWTAuthenticator from '../auth/JWTAuthenticator';
-import config from 'config';
+import config from '../../config';
 import logger from '../logging/logger';
 
 const appConfig = (config as any).get('app');

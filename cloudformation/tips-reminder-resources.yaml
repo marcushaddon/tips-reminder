@@ -1,3 +1,4 @@
+# TODO: Put secrets manager under cloudformation
 AWSTemplateFormatVersion: 2010-09-09
 Description: |
   Cloud resources for the tips-reminder service
@@ -23,10 +24,24 @@ Resources:
                 - "lambda.amazonaws.com"
       Description: Execution role for reminder lambda
       RoleName: tips.reminder
+  SecretsManagerPolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: tips.reminder.secrets
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: 
+              - "secretsmanager:GetSecretValue"
+            Resource: 
+              - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:tips-test-jwt-secret-*"
+      Roles:
+        - Ref: "TipsReminderRole"
   S3Policy:
     Type: "AWS::IAM::Policy"
     Properties:
-      PolicyName: blackline.dsco.s3
+      PolicyName: tips.reminder.s3
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -36,14 +51,13 @@ Resources:
               - "s3:PutObject"
               - "s3:ListObject"
             Resource:
-              - "arn:aws:s3:::nike-finrec-*-blackline-*"
-              - "arn:aws:s3:::nike-finrec-*-blackline-*/*"
+              - "arn:aws:s3:::tips-*-reminder-integrations"
       Roles:
         - Ref: "TipsReminderRole"
   SqsPolicy:
     Type: "AWS::IAM::Policy"
     Properties:
-      PolicyName: blackline.dsco.sqs
+      PolicyName: tips.reminder.sqs
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -51,11 +65,9 @@ Resources:
             Action:
               - "sqs:*"
             Resource:
-              - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:blackline-dsco*"
-              - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:blackline-ingest*"
+              - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:tips-*-reminder"
       Roles:
         - Ref: "TipsReminderRole"
-  
   TipsReminderIntegrationsBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain

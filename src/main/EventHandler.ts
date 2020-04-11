@@ -1,4 +1,4 @@
-import config from 'config';
+import config from '../config';
 import logger from './logging/logger';
 import {
     IReminderEvent,

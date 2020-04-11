@@ -1,6 +1,6 @@
 import { SecretsManager } from 'aws-sdk';
 import jsonwebtoken from 'jsonwebtoken';
-import config from 'config';
+import config from '../../config';
 import logger from '../logging/logger';
 
 
@@ -45,7 +45,6 @@ export default class JWTAuthenticator {
         if (typeof res.SecretString === 'undefined') {
             throw new Error('Unable to refresh shared JWT secret');
         }
-        console.log(res.SecretString);
 
         // TODO: I guess we need to parse?
         this._cachedSecret = res.SecretString;

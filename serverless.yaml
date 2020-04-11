@@ -34,3 +34,5 @@ package:
     - serverless/**
     - src/**
     - README.md
+    - node_modules/@types/**
+    - node_modules/aws-sdk/**
