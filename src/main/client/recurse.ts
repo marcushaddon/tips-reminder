@@ -9,8 +9,8 @@ const lambda = new Lambda({ region: appConfig.region });
 const messageSelf = async (message: any ) => {
     await lambda.invokeAsync({
         FunctionName: lambdaName,
-        InvokeArgs: message
-    })
+        InvokeArgs: JSON.stringify(message)
+    }).promise();
 }
 
 export default messageSelf;

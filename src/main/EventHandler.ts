@@ -108,7 +108,7 @@ export default class EventHandler {
             logger.putCtx({ schedule });
             const message = formatMessage(tipper, schedule, recipient);
 
-            logger.info(`Sending text to ${tipper.phoneNumber}`, { message });
+            logger.info(`Sending text to ${tipper.phoneNumber}`, { text: message });
             try {
                 const res = await this.twilioClient.sendText(pair[0].tipper.phoneNumber, message);
                 logger.info(`Successfully texted ${tipper.phoneNumber}`, { sid: res.sid });
