@@ -11,5 +11,5 @@ tips:
 integrations:
   - atx
 
-sqs:
-  upstreamQueueUrl: TODO-URL
+lambda:
+  lambdaName: tips-test-reminder

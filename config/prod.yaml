@@ -1,2 +1,5 @@
 s3:
   integrationsBucket: tips-prod-reminder-integrations
+
+lambda:
+  lambdaName: tips-prod-reminder

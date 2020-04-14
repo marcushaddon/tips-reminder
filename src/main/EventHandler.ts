@@ -13,7 +13,7 @@ import TipperServiceClient from './client/TipperServiceClient';
 import GoogleSheetClient from './client/GoogleSheetClient';
 import { singleton as twilioSingleton } from './client/TwilioClient';
 import formatMessage from './utilities/formatMessage';
-import messageSelf from './client/messageSelf';
+import recurseOnSelf from './client/recurse';
 
 
 const integrationConfig = (config as any).get('integrations');
@@ -21,7 +21,7 @@ const integrationConfig = (config as any).get('integrations');
 export interface IEventHandlerParams {
     tipperService: ITipperServiceClient;
     twilioClient: ITwilioClient;
-    notifyUpstream: (message: any) => Promise<void>;
+    recurse: (message: any) => Promise<void>;
 }
 
 interface ITipperSchedule {
@@ -32,19 +32,19 @@ interface ITipperSchedule {
 export default class EventHandler {
     private tipperService: ITipperServiceClient;
     private twilioClient: ITwilioClient;
-    private notifyUpstream: (message: any) => Promise<void>;
+    private recurse: (message: any) => Promise<void>;
     constructor({
         tipperService,
         twilioClient,
-        notifyUpstream
+        recurse
     }: IEventHandlerParams = {
         tipperService: new TipperServiceClient(),
         twilioClient: twilioSingleton,
-        notifyUpstream: messageSelf
+        recurse: recurseOnSelf
     }) {
         this.tipperService = tipperService;
         this.twilioClient = twilioClient;
-        this.notifyUpstream = notifyUpstream;
+        this.recurse = recurse;
     }
 
     async handleEvent(): Promise<void> {
@@ -52,7 +52,7 @@ export default class EventHandler {
         const time = new Date().getTime();
         logger.info(`Fetching users due at time ${time}`);
         const tippers = await this.tipperService.getDueTippers(time);
-        logger.info(`Fetched ${tippers.length} tippers due at time ${new Date(time).toISOString()}`);
+        logger.info(`Fetched ${tippers.length} tippers due at time ${new Date(time).toISOString()}`, { tipperCount: tippers.length });
 
         if (tippers.length === 0) {
             logger.info('No tippers due, exiting');
@@ -81,7 +81,7 @@ export default class EventHandler {
             const sheetClient = new GoogleSheetClient(tipJarId);
             const tipperSchedules = groups[tipJarId];
             const recipients = await sheetClient.getRandomRecipients(tipperSchedules.length);
-            logger.info(`Fetched ${recipients.length} recipient from tipJar ${tipJarId}`);
+            logger.info(`Fetched ${recipients.length} recipient from tipJar ${tipJarId}`, { recipientCount: recipients.length });
 
             // TODO: Randomize!
             
@@ -90,10 +90,10 @@ export default class EventHandler {
         }
 
         try {
-            await this.notifyUpstream(event);
+            await this.recurse(event);
             logger.info('Successfully triggered continuation');
         } catch (e) {
-            logger.error('Encountered error while notifying upsteam', e);
+            logger.error('Encountered error while recursing', e);
         }
         
         
@@ -105,6 +105,7 @@ export default class EventHandler {
         const textedTippers = new Map<string, ITipper>();
         for (let pair of pairs) {
             const [ { tipper, schedule }, recipient ] = pair;
+            logger.putCtx({ schedule });
             const message = formatMessage(tipper, schedule, recipient);
 
             logger.info(`Sending text to ${tipper.phoneNumber}`, { message });

@@ -5,3 +5,6 @@ integrations:
 
 sqs:
   upstreamQueueUrl: test-url
+
+lambda:
+  lambdaName: dev
