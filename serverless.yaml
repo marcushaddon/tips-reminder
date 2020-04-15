@@ -19,7 +19,7 @@ provider:
     - Effect: Allow
       Action:
         - lambda:InvokeAsync
-      Resource: "*"
+      Resource: !Sub tips-${opt:stage}-reminder
 
 
 custom: ${file(./serverless/config/test.yaml)}
