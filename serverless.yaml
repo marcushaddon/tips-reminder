@@ -16,6 +16,10 @@ provider:
         - 's3:GetObject'
         - 's3:ListObject'
       Resource: !Sub arn:aws:s3:::tips-${opt:stage}-reminder-integrations/*
+    - Effect: Allow
+      Action:
+        - lambda:InvokeAsync
+      Resource: "*"
 
 
 custom: ${file(./serverless/config/test.yaml)}
