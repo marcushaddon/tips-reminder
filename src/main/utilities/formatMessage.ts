@@ -8,7 +8,7 @@ const formatMessage = (tipper: ITipper, schedule: ISchedule, recipient: IRecipie
     recipient.venmo ? `https://www.venmo.com/${recipient.venmo}` :
     recipient.cashapp ? `CashApp: ${recipient.cashapp}` : '{payment here}';
     
-    return `Hey ${tname}! Don't forget to tip someone ${tipFor}! Thank you, and stay safe! ${link}`;
+    return `Hey ${tname}! Don't forget to tip someone ${tipFor}! Thank you, and stay safe! ${link}\n\n(At any time, reply STOP to opt out)`;
 };
 
 export default formatMessage;

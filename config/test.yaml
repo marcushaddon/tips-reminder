@@ -6,7 +6,7 @@ app:
 
 tips:
   tippersService:
-    baseUrl: https://tipsbot.us
+    baseUrl: https://tipsbot.us/v1
 
 integrations:
   - atx

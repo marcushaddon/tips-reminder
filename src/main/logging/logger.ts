@@ -24,10 +24,12 @@ class Logger {
         loggerMethod(message, logobj);
     }
     info(message: string, ctx: { [field: string]: any } = {}): void {
-        this._log(message, ctx, _logger.info);
+        const infoCtx = { ...ctx, logLevel: 'info' };
+        this._log(message, infoCtx, _logger.info);
     }
     error(message: string, error: { [field: string]: any } = {}): void {
-        this._log(message, { error }, _logger.info);
+        const errCtx = { error, errorMessage: error.message, logLevel: 'error' };
+        this._log(message, errCtx, _logger.info);
     }
 
     putCtx(ctx: { [field: string]: any }): void {
