@@ -1,0 +1,10 @@
+integrations:
+  - A
+  - B
+  - C
+
+sqs:
+  upstreamQueueUrl: test-url
+
+lambda:
+  lambdaName: dev

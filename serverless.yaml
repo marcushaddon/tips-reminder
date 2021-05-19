@@ -1,0 +1,55 @@
+service: tips-reminder
+provider:
+  name: aws
+  runtime: nodejs12.x
+  # stage: stage, 'test'
+  region: ${self:custom.aws.region, 'us-east-2'}
+  memorySize: 128
+  timeout: 
+  iamRoleStatements:
+    - Effect: 'Allow'
+      Action:
+        - 'secretsmanager:GetSecretValue'
+      Resource: !Sub arn:aws:secretsmanager:${self:custom.aws.region}:${self:custom.aws.accountId}:secret:tips-*
+    - Effect: 'Allow'
+      Action:
+        - 's3:GetObject'
+        - 's3:ListObject'
+      Resource: !Sub arn:aws:s3:::tips-${opt:stage}-reminder-integrations/*
+    - Effect: Allow
+      Action:
+        - lambda:InvokeAsync
+      Resource: !Sub arn:aws:${self:custom.aws.region}:${self:custom.aws.accountId}:function:tips-${opt:stage}-reminder
+
+
+custom: ${file(./serverless/config/test.yaml)}
+
+functions:
+  tipsReminder:
+    handler: dist/main/handler.onEvent
+    name: tips-${opt:stage}-reminder
+    description: > 
+      Queries for tippers who are due reminders, fetches random
+      recipients from appropriate tip jars and sends texts.
+    # role: tips.reminder
+    layers:
+      - arn:aws:lambda:us-east-2:866624143450:layer:tips-common:5
+    environment:
+      NODE_ENV: ${opt:stage}
+      TWILIO_ACCOUNT_SID: ${env:TWILIO_ACCOUNT_SID}
+      TWILIO_AUTH_TOKEN: ${env:TWILIO_AUTH_TOKEN}
+      TWILIO_NUMBER: ${env:TWILIO_NUMBER}
+    events:
+      - schedule: cron(1 * * * ? *)
+        enabled: true
+
+package:
+  exclude:
+    - .npm/**
+    - coverage/**
+    - cloudformation/**
+    - serverless/**
+    - src/**
+    - README.md
+    - node_modules/@types/**
+    - node_modules/aws-sdk/**

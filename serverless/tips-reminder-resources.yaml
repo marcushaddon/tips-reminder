@@ -1,0 +1,100 @@
+# TODO: Put secrets manager under cloudformation
+AWSTemplateFormatVersion: "2010-09-09"
+Description: |
+  Cloud resources for the tips-reminder service
+Parameters:
+  Environment:
+    Type: String
+    Description: The test or prod basically
+    Default: test
+Resources:
+  # TipsReminderRole:
+  #   Type: "AWS::IAM::Role"
+  #   Properties:
+  #     AssumeRolePolicyDocument:
+  #       Version: "2012-10-17"
+  #       Statement:
+  #         -
+  #           Effect: "Allow"
+  #           Action:
+  #             - "sts:AssumeRole"
+  #           Principal:
+  #             Service:
+  #               - "lambda.amazonaws.com"
+  #     Description: Execution role for reminder lambda
+  #     RoleName: tips.reminder
+  # SecretsManagerPolicy:
+  #   Type: "AWS::IAM::Policy"
+  #   Properties:
+  #     PolicyName: tips.reminder.secrets
+  #     DependsOn: 
+  #       - Ref: TipsReminderRole
+  #     PolicyDocument:
+  #       Version: "2012-10-17"
+  #       Statement:
+  #         - Effect: Allow
+  #           Action: 
+  #             - "secretsmanager:GetSecretValue"
+  #           Resource: "arn:aws:secretsmanager:us-east-2:866624143450:secret:tips-${opt:stage}-jwt-secret-*"
+  #     Roles:
+  #       - Ref: "TipsReminderRole"
+  # S3Policy:
+  #   Type: "AWS::IAM::Policy"
+  #   Properties:
+  #     PolicyName: tips.reminder.s3
+  #     DependsOn:
+  #       - Ref: TipsReminderRole
+  #     PolicyDocument:
+  #       Version: "2012-10-17"
+  #       Statement:
+  #         - Effect: Allow
+  #           Action:
+  #             - "s3:GetObject"
+  #             - "s3:PutObject"
+  #             - "s3:ListObject"
+  #           Resource:
+  #             - "arn:aws:s3:::tips-*-reminder-integrations"
+  #     Roles:
+  #       - Ref: "TipsReminderRole"
+  # SqsPolicy:
+  #   Type: "AWS::IAM::Policy"
+  #   Properties:
+  #     PolicyName: tips.reminder.sqs
+  #     DependsOn: 
+  #        - Ref: TipsReminderRole
+  #     PolicyDocument:
+  #       Version: "2012-10-17"
+  #       Statement:
+  #         - Effect: Allow
+  #           Action:
+  #             - "sqs:*"
+  #           Resource:
+  #             - !Sub "arn:aws:sqs:${self:custom.aws.region}:${self:custom.aws.accountId}:tips-*-reminder"
+  #     Roles:
+  #       - Ref: "TipsReminderRole"
+  TipsReminderIntegrationsBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: !Sub tips-${opt:stage}-reminder-integrations
+      AccessControl: BucketOwnerFullControl
+  TipsReminderIntegrationsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref TipsReminderIntegrationsBucket
+      PolicyDocument:
+        Statement:
+          # reading is open to the AWS account
+          - Action:
+              - "s3:GetObject"
+            Effect: "Allow"
+            Resource:
+              Fn::Join:
+                - ""
+                -
+                  - "arn:aws:s3:::"
+                  -
+                    Ref: TipsReminderIntegrationsBucket
+                  - "/*"
+            Principal:
+              AWS: !Sub ${self:custom.aws.accountId}

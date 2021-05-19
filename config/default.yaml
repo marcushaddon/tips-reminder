@@ -1,0 +1,12 @@
+app:
+  service: tips-reminder
+  jwtSecretKey: tips-local-jwt-secret
+  region: us-east-2
+  jwtTTL: 1h # 1hr in ms
+
+tips:
+  tippersService:
+    baseUrl: localhost:3000
+
+s3:
+  integrationsBucket: tips-test-reminder-integrations
